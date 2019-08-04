@@ -39,7 +39,7 @@ class PubSubListener(StreamListener):
 
     def on_data(self, data):
         tweet = json.loads(data)
-        sys.stdout.write(str(tweet))
+        # sys.stdout.write(str(tweet))
 
         # Only publish original tweets
         if 'extended_tweet' in tweet:
@@ -52,6 +52,13 @@ class PubSubListener(StreamListener):
             )
         else:
             sys.stdout.write('-')
+            self.publisher.publish('projects/{}/topics/{}'.format(
+                PROJECT_ID,
+                PUBSUB_TOPIC
+                ),
+                data.encode('utf-8')
+            )
+
         sys.stdout.flush()
         return True
 
