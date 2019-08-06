@@ -1,5 +1,6 @@
 .idea/*
 configs/*
 extras/*
+sentimental/*
 *.pyc
 

@@ -24,9 +24,11 @@ from __future__ import absolute_import
 
 import logging
 import json
+from sentimental import Sentimental
 
 import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
+from apache_beam.transforms.core import DoFn
 
 
 def run(argv=None):
@@ -35,7 +37,7 @@ def run(argv=None):
 
     # read
     topic_path = "projects/hpcnt-practice/topics/hpcnt-tutorial"
-    lines = (p | 'read' >> beam.io.ReadFromPubSub(topic=topic_path))
+    lines = p | 'read' >> beam.io.ReadFromPubSub(topic=topic_path)
 
     # format message
     def format_message(message, timestamp=beam.DoFn.TimestampParam):
@@ -49,11 +51,23 @@ def run(argv=None):
 
     formatted = lines | beam.Map(format_message)
 
-    filtered = (formatted
-                | 'windowed' >> beam.WindowInto(beam.window.FixedWindows(5))
-                | 'filter' >> (beam.Filter(lambda data: data.get('text').lower().find('bit') >= 0)))
+    class CalculateSentimentFn(DoFn):
+        def start_bundle(self):
+            logging.info('model loading : start')
+            self.senti = Sentimental.load('model.pickle')
+            logging.info('model loading : done')
 
-    filtered | 'out' >> beam.Map(lambda out: logging.info(out))
+        def process(self, element):
+            key, value = element
+
+            res = self.senti.sentiment(value.get('text'))
+            yield (value, res.get('positive'), res.get('neutral'), res.get('negative'))
+
+    sentimented = (formatted
+                    | 'convert to KV' >> beam.Map(lambda x: ('common key', x))
+                    | 'calc sentiment' >> (beam.ParDo(CalculateSentimentFn())))
+
+    sentimented | 'out' >> beam.Map(lambda x: logging.info(x))
 
     result = p.run()
     result.wait_until_finish()
