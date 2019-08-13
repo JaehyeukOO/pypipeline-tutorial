@@ -27,6 +27,7 @@ import logging
 import apache_beam as beam
 from apache_beam.io import ReadFromText
 from apache_beam.options.pipeline_options import PipelineOptions
+from apache_beam.transforms.core import _ReiterableChain
 
 
 def run():
@@ -57,15 +58,21 @@ def run():
 
     # aggr to list
     def aggr_to_list(values):
-        if not values:
-            return values
-        elif len(values) == 1:
-            return values[0]
-        else:
-            if isinstance(values[0], list):
-                return values[0] + [values[1]]
+        try:
+            if not values:
+                return values
+            elif isinstance(values, _ReiterableChain):
+                return [x for x in values]
+            elif len(values) == 1:
+                return values[0]
             else:
-                return [values[0]] + [values[1]]
+                if isinstance(values[0], list):
+                    return values[0] + [values[1]]
+                else:
+                    return [x for x in values]
+        except Exception:
+            print(values)
+            pass
 
     aggred_list = counts | 'sort' >> beam.CombineGlobally(aggr_to_list).without_defaults()
 
