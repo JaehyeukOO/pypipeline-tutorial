@@ -117,14 +117,7 @@ def run(argv=None):
 
     aggred_list = counts | 'sort' >> beam.CombineGlobally(aggr_to_list).without_defaults()
 
-    # out
-    def sorted_out(values):
-        try:
-            out = sorted(sum(values, []), key=lambda x: int(x[0].split('_')[1]), reverse=False)
-            logging.info(out)
-        except Exception:
-            logging.info(values)
-    aggred_list | 'out' >> beam.Map(sorted_out)
+    aggred_list | 'out' >> beam.Map(lambda x: logging.info(sorted(x, key=lambda x: x[1], reverse=True)))
 
     result = p.run()
     result.wait_until_finish()
