@@ -33,11 +33,11 @@ import calendar
 import time
 
 
-PROJECT_ID = 'hpcnt-practice'
-PUBSUB_TOPIC = 'hpcnt-tutorial-file'
+PROJECT_ID = 'qwiklabs-gcp-34125c5e4e40e9e3'  # replace project_id and topic with yours
+PUBSUB_TOPIC = 'pycon30-file'
 
 
-service_account_info = json.load(open("configs/hpcnt-practice.json"))
+service_account_info = json.load(open("configs/pycon30.json"))  # replace service_account_json file location with yours
 publisher_audience = "https://pubsub.googleapis.com/google.pubsub.v1.Publisher"
 credentials = jwt.Credentials.from_service_account_info(
     service_account_info, audience=publisher_audience

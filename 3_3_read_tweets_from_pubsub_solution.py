@@ -34,7 +34,7 @@ def run(argv=None):
     p = beam.Pipeline(options=pipeline_options)
 
     # read
-    topic_path = "projects/hpcnt-practice/topics/hpcnt-tutorial"
+    topic_path = "projects/qwiklabs-gcp-34125c5e4e40e9e3/topics/pycon30-tweet"  # replace topic with yours
     lines = (p | 'read' >> beam.io.ReadFromPubSub(topic=topic_path))
 
     # format message

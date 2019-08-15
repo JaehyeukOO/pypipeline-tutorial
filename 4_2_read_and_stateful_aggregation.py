@@ -40,7 +40,7 @@ def run(argv=None):
     p = beam.Pipeline(options=pipeline_options)
 
     # read
-    topic_path = "projects/hpcnt-practice/topics/hpcnt-tutorial"
+    topic_path = "projects/qwiklabs-gcp-34125c5e4e40e9e3/topics/pycon30-tweet"  # replace topic with yours
     lines = p | 'read' >> beam.io.ReadFromPubSub(topic=topic_path)
 
     # format message
@@ -84,7 +84,7 @@ def run(argv=None):
             yield ('{}_{}'.format(value, index_value), 1)
 
 
-    indexed = (words | 'convert to KV' >> beam.Map(lambda x: ('common key', x))
+    indexed = (words | 'convert to KV' >> beam.Map(lambda x: ('common key', x))  # (x, 1)
                      | 'set index' >> (beam.ParDo(StatefulBufferingFn())))
 
     # count words

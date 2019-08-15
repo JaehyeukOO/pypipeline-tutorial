@@ -31,8 +31,9 @@ from google.cloud.pubsub import types
 from google.cloud import pubsub
 
 
-PROJECT_ID = 'hpcnt-practice'
-PUBSUB_TOPIC = 'hpcnt-tutorial'
+# replace topic with yours
+PROJECT_ID = 'qwiklabs-gcp-34125c5e4e40e9e3'
+PUBSUB_TOPIC = 'pycon30-tweet'
 
 
 class PubSubListener(StreamListener):
@@ -43,7 +44,7 @@ class PubSubListener(StreamListener):
         import json
         from google.auth import jwt
 
-        service_account_info = json.load(open("configs/hpcnt-practice.json"))
+        service_account_info = json.load(open("configs/pycon30.json"))  # replace service_account_json file location with yours
         publisher_audience = "https://pubsub.googleapis.com/google.pubsub.v1.Publisher"
         credentials = jwt.Credentials.from_service_account_info(
             service_account_info, audience=publisher_audience
@@ -93,10 +94,8 @@ if __name__ == '__main__':
 
     known_args, _ = parser.parse_known_args(sys.argv)
 
-    #This handles Twitter authetification and the connection to Twitter Streaming API
     auth = OAuthHandler(TWITTER_CONSUMER_KEY, TWITTER_CONSUMER_SECRET)
     auth.set_access_token(TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET)
     stream = Stream(auth=auth, listener=PubSubListener(), tweet_mode='extended')
 
-    #This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
     stream.filter(track=known_args.twitter_topics.split(','), languages=['en'])

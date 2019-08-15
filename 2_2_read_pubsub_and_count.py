@@ -34,7 +34,7 @@ def run():
     p = beam.Pipeline(options=pipeline_options)
 
     # read from pubsub
-    topic_path = "projects/hpcnt-practice/topics/hpcnt-tutorial-file"
+    topic_path = "projects/qwiklabs-gcp-34125c5e4e40e9e3/topics/pycon30-file"  # replace topic_path with yours
     lines = (p | 'read' >> beam.io.ReadFromPubSub(topic=topic_path)
                | 'Load into JSON' >> beam.Map(json.loads))
 

@@ -20,6 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+
 from __future__ import absolute_import
 
 import logging
@@ -28,6 +29,7 @@ import json
 import apache_beam as beam
 from apache_beam.transforms.core import _ReiterableChain
 from apache_beam.options.pipeline_options import PipelineOptions
+from apache_beam.transforms import trigger
 
 
 def run():
@@ -35,7 +37,7 @@ def run():
     p = beam.Pipeline(options=pipeline_options)
 
     # read
-    topic_path = "projects/hpcnt-practice/topics/hpcnt-tutorial-file"
+    topic_path = "projects/qwiklabs-gcp-34125c5e4e40e9e3/topics/pycon30-file"  # replace topic with yours
     lines = (p | 'read' >> beam.io.ReadFromPubSub(topic=topic_path, with_attributes=True))
 
     # format message
@@ -48,7 +50,12 @@ def run():
         return formatted_message
 
     formatted = lines | beam.Map(format_message)
-    windowed = formatted | beam.WindowInto(beam.window.FixedWindows(5))
+    # windowed = formatted | beam.WindowInto(beam.window.FixedWindows(5))
+    # windowed = formatted | beam.WindowInto(beam.window.SlidingWindows(60, 5))
+    windowed = formatted | beam.WindowInto(
+        beam.window.GlobalWindows(),
+        trigger=trigger.Repeatedly(trigger.AfterCount(1)),
+        accumulation_mode=trigger.AccumulationMode.ACCUMULATING)
 
     # split words
     def find_words(element):

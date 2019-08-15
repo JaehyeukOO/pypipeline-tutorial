@@ -36,7 +36,7 @@ def run(argv=None):
     p = beam.Pipeline(options=pipeline_options)
 
     # read
-    topic_path = "projects/hpcnt-practice/topics/hpcnt-tutorial"
+    topic_path = "projects/qwiklabs-gcp-34125c5e4e40e9e3/topics/pycon30-tweet"  # replace topic with yours
     lines = p | 'read' >> beam.io.ReadFromPubSub(topic=topic_path)
 
     # format message
@@ -52,10 +52,19 @@ def run(argv=None):
     formatted = lines | beam.Map(format_message)
 
     class CalculateSentimentFn(DoFn):
+        senti = None
+
         def start_bundle(self):
-            logging.info('model loading : start')
-            self.senti = Sentimental.load('model.pickle')
-            logging.info('model loading : done')
+            logging.info('model loading in start_bundle: start')
+            if (not self.senti):
+                self.senti = Sentimental.load('model.pickle')
+            logging.info('model loading in start_bundle: done')
+
+        def setup(self):
+            logging.info('model loading in setup: start')
+            if (not self.senti):
+                self.senti = Sentimental.load('model.pickle')
+            logging.info('model loading in setup: done')
 
         def process(self, element):
             key, value = element
